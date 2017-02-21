@@ -4,7 +4,7 @@
 
 Please install the latest version of [node.js](https://nodejs.org).
 
-Then install using npm:
+Then install using [npm](https://www.npmjs.com/package/nuget-tree):
 
 ```
 > npm install -g nuget-tree
