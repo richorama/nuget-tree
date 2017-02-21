@@ -12,5 +12,9 @@
     "archy": "^1.0.0",
     "xml2js": "^0.4.17",
     "zip": "^1.2.0"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "nuget-tree": "app.js"
   }
 }

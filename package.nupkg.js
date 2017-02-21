@@ -32,9 +32,19 @@ function readAllDeps(nuspecXml){
     parseXml(nuspecXml, (err, data) => {
         (data.package.metadata || []).forEach(metadata => {
             (metadata.dependencies || []).forEach(dep => {
+
+                // if the nuget package targets multiple version, there are groups
+                (dep.group || []).forEach(dep => {
+                    (dep.dependency || []).forEach(dep => {
+                        dependencies.push(dep.$);
+                    })
+                });
+
+                // otherwise there are no groups
                 (dep.dependency || []).forEach(dep => {
                     dependencies.push(dep.$);
                 })
+                
             });
         });
     });
