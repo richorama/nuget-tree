@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var parseXml = require('xml2js').parseString;
+var safeBufferRead = require('./safeBufferRead');
 
 module.exports.list = function(dir){
 
@@ -10,7 +11,7 @@ module.exports.list = function(dir){
         return;
     }
 
-    var xml = fs.readFileSync(path.join(dir,'packages.config')).toString();
+    var xml = safeBufferRead(fs.readFileSync(path.join(dir,'packages.config')));
 
     var parsedOutput;
     parseXml(xml, function (err, result) {

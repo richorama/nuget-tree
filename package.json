@@ -1,6 +1,6 @@
 {
   "name": "nuget-tree",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -16,6 +16,10 @@
   },
   "preferGlobal": true,
   "bin": {
-    "nuget-tree": "app.js"
+    "nuget-tree": "./app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/richorama/nuget-tree.git"
   }
 }

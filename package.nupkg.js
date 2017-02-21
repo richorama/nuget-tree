@@ -2,8 +2,7 @@ var path = require('path');
 var fs = require('fs');
 var zip = require('zip');
 var parseXml = require('xml2js').parseString;
-
-
+var safeBufferRead = require('./safeBufferRead');
 
 module.exports.readNuspec = function(packagesFolder, package){
     if (!packagesFolder) throw new Error("no packagesFolder");
@@ -30,6 +29,8 @@ module.exports.readNuspec = function(packagesFolder, package){
 function readAllDeps(nuspecXml){
     var dependencies = [];
     parseXml(nuspecXml, (err, data) => {
+        if (err) console.error(err);
+        if (!data) return;
         (data.package.metadata || []).forEach(metadata => {
             (metadata.dependencies || []).forEach(dep => {
 
@@ -44,7 +45,7 @@ function readAllDeps(nuspecXml){
                 (dep.dependency || []).forEach(dep => {
                     dependencies.push(dep.$);
                 })
-                
+
             });
         });
     });
@@ -59,7 +60,7 @@ function openNuspecFile(packageFilePath){
     var nuspec;
     reader.forEach(function (entry, next) {
         if (path.extname(entry._header.file_name) === ".nuspec"){
-            nuspec = entry.getData().toString();
+            nuspec = safeBufferRead(entry.getData())
         }
     });
     return nuspec;

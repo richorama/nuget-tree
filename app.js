@@ -1,9 +1,13 @@
+#!/usr/bin/env node
+
 /*
 ## todo:
 
 * allow the user to customise the starting directory
 * add a switch for a package id filter
-* include PackageReference format https://github.com/NuGet/Home/wiki/PackageReference-Specification
+* include PackageReference format:
+    https://github.com/NuGet/Home/wiki/PackageReference-Specification
+    https://docs.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files
 
 */
 
