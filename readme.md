@@ -47,7 +47,7 @@ packages.config
 Optional parameters:
 
 * `--hideVersion` : hides the package versions
-* `--showSystem` : shows the system packages
+* `--showSystem` : shows the `System.*` packages
 * `--onlyTopLevel` : lists only the packages at the top level of the tree (i.e. those that are
 not depended upon by any other package)
 
