@@ -12,7 +12,7 @@ Then install using [npm](https://www.npmjs.com/package/nuget-tree):
 
 ## Usage
 
-Navigate to a project containing a project.config. Then run this command:
+Navigate to a directory containing a project.config. Then run this command:
 
 ```
 > nuget-tree
@@ -46,10 +46,10 @@ packages.config
 
 Optional parameters:
 
-* `--hideVersion` : hides the package verions
-* `--showSystem` : shows the system packages
+* `--hideVersion` : hides the package versions
+* `--showSystem` : shows the `System.*` packages
 * `--onlyTopLevel` : lists only the packages at the top level of the tree (i.e. those that are
-depended upon by any other package)
+not depended upon by any other package)
 
 ## License
 
