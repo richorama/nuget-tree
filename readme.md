@@ -12,7 +12,7 @@ Then install using [npm](https://www.npmjs.com/package/nuget-tree):
 
 ## Usage
 
-Navigate to a directory containing a project.config. Then run this command:
+Navigate to a directory containing a `packages.config` / `project.lock.json` file. Then run this command:
 
 ```
 > nuget-tree
