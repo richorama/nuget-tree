@@ -12,7 +12,7 @@
 */
 
 var packagesConfig = require('./packages.config.js');
-var projectJson = require('./project.json.js');
+var projectLockJson = require('./project.lock.json.js');
 var nuspec = require('./package.nupkg.js');
 var packages = require('./packages.js');
 var archy = require('archy');
@@ -24,9 +24,11 @@ function hasFlag(name){
     return !!process.argv.filter(x => x === '--' + name).length;
 }
 
-var hideVersion = hasFlag('hideVersion');
-var showSystem = hasFlag('showSystem');
-var onlyTopLevel = hasFlag('onlyTopLevel');
+var settings = {
+    hideVersion : hasFlag('hideVersion'),
+    showSystem : hasFlag('showSystem'),
+    onlyTopLevel : hasFlag('onlyTopLevel')
+}
 
 var packageFolder = packages.findPackageFolder(dir);
 if (!packageFolder){
@@ -36,21 +38,17 @@ if (!packageFolder){
 }
 
 var packagesFromPackageConfig = packagesConfig.list(dir);
-if (packagesFromPackageConfig.length) displayPackages(packagesFromPackageConfig, 'packages.config');
+if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
 
-var packagesFromProjectJson = projectJson.list(dir);
-if (packagesFromProjectJson.length) displayPackages(packagesFromProjectJson, 'project.json');
-
-function displayPackages(packages, source){
-
-    if (!showSystem){
+    var packages = packagesFromPackageConfig;
+    if (!settings.showSystem){
         packages = packages.filter(x => x.id.indexOf('System.') !== 0)
     }
 
     var packageDictionary = {};
     packages.forEach(x => {
         packageDictionary[x.id] = x;
-        x.label = x.id + " " + (hideVersion ? "" : x.version.green);
+        x.label = x.id + " " + (settings.hideVersion ? "" : x.version.green);
     });
 
     packages.forEach(x => {
@@ -68,9 +66,16 @@ function displayPackages(packages, source){
             }
         });
     });
+    displayPackages(packages, 'packages.config');
+}
+
+var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
+if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 
 
-    if (onlyTopLevel){
+function displayPackages(packages, source){
+
+    if (settings.onlyTopLevel){
         packages.filter(x => !x.used).forEach(x => {
             console.log(x.label);
         });

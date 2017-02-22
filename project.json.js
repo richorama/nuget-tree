@@ -18,7 +18,7 @@ module.exports.list = function(dir){
         return [];
     }
 
-    var jsonString = safeBufferRead(fs.readFileSync(path.join(dir,'project.json')));
+    var jsonString = safeBufferRead(fs.readFileSync(path.join(dir,'project.json'))).replace("´╗┐","");
     var json = JSON.parse(jsonString);
 
     var deps = json.dependencies || {};

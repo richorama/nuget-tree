@@ -6,7 +6,7 @@ var safeBufferRead = require('./safeBufferRead');
 module.exports.list = function(dir){
 
     if (!fs.existsSync(path.join(dir,'packages.config'))){
-        return [];
+        return null;
     }
 
     var xml = safeBufferRead(fs.readFileSync(path.join(dir,'packages.config')));

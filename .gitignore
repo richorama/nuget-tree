@@ -1,3 +1,4 @@
 node_modules/
 packages.config
 project.json
+project.lock.json
