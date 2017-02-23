@@ -30,15 +30,17 @@ var settings = {
     onlyTopLevel : hasFlag('onlyTopLevel')
 }
 
-var packageFolder = packages.findPackageFolder(dir);
-if (!packageFolder){
-    console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
-    process.exit(-1);
-    return;
-}
+var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
+if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 
 var packagesFromPackageConfig = packagesConfig.list(dir);
 if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
+
+    var packageFolder = packages.findPackageFolder(dir);
+    if (!packageFolder){
+        console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
+        return;
+    }
 
     var packages = packagesFromPackageConfig;
     if (!settings.showSystem){
@@ -68,9 +70,6 @@ if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
     });
     displayPackages(packages, 'packages.config');
 }
-
-var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
-if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 
 
 function displayPackages(packages, source){
