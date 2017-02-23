@@ -20,14 +20,15 @@ var colours = require('colors');
 
 var dir = process.cwd();
 
-function hasFlag(name){
+function hasFlag(name) {
     return !!process.argv.filter(x => x === '--' + name).length;
 }
 
 var settings = {
-    hideVersion : hasFlag('hideVersion'),
-    showSystem : hasFlag('showSystem'),
-    onlyTopLevel : hasFlag('onlyTopLevel')
+    hideVersion: hasFlag('hideVersion'),
+    showSystem: hasFlag('showSystem'),
+    onlyTopLevel: hasFlag('onlyTopLevel'),
+    flat: hasFlag('flat')
 }
 
 var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
@@ -37,13 +38,13 @@ var packagesFromPackageConfig = packagesConfig.list(dir);
 if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
 
     var packageFolder = packages.findPackageFolder(dir);
-    if (!packageFolder){
+    if (!packageFolder) {
         console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
         return;
     }
 
     var packages = packagesFromPackageConfig;
-    if (!settings.showSystem){
+    if (!settings.showSystem) {
         packages = packages.filter(x => x.id.indexOf('System.') !== 0)
     }
 
@@ -72,16 +73,20 @@ if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
 }
 
 
-function displayPackages(packages, source){
+function displayPackages(packages, source) {
 
-    if (settings.onlyTopLevel){
+    if (settings.onlyTopLevel) {
         packages.filter(x => !x.used).forEach(x => {
+            console.log(x.label);
+        });
+    } else if (settings.flat) {
+        packages.forEach(x => {
             console.log(x.label);
         });
     } else {
         var head = {
-            label : source,
-            nodes : packages.filter(x => !x.used)
+            label: source,
+            nodes: packages.filter(x => !x.used)
         };
         console.log(archy(head));
     }
