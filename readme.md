@@ -50,6 +50,7 @@ Optional parameters:
 * `--showSystem` : shows the `System.*` packages
 * `--onlyTopLevel` : lists only the packages at the top level of the tree (i.e. those that are
 not depended upon by any other package)
+* `--flat` : lists the dependencies without the hierarchy
 
 ## License
 
