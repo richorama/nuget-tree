@@ -24,11 +24,22 @@ function hasFlag(name) {
     return !!process.argv.filter(x => x === '--' + name).length;
 }
 
+function hasValue(name){
+    var index = process.argv.indexOf('--' + name);
+    if (index === -1) return null;
+    return process.argv[index + 1];
+}
+
 var settings = {
     hideVersion: hasFlag('hideVersion'),
     showSystem: hasFlag('showSystem'),
     onlyTopLevel: hasFlag('onlyTopLevel'),
-    flat: hasFlag('flat')
+    flat: hasFlag('flat'),
+    why:hasValue('why')
+}
+
+if (settings.why){
+  console.log("Showing dependency trees containing " + settings.why);  
 }
 
 var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
@@ -72,10 +83,37 @@ if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
     displayPackages(packages, 'packages.config');
 }
 
+function findWhy(node){
+  node.match = false;
+
+  if (node.id.toLowerCase() === settings.why.toLowerCase()) {
+    node.match = true;
+  }
+
+  node.nodes.forEach(child => {
+    node.match = findWhy(child) || node.match
+  });
+  return node.match;
+}
+
+function filterOnlyMatches(node){
+    node.nodes = node.nodes.filter(x => x.match);
+    node.nodes.forEach(filterOnlyMatches)
+}
 
 function displayPackages(packages, source) {
 
-    if (settings.onlyTopLevel) {
+    if (settings.why){
+      var head = {
+          id :"",
+          label: source,
+          match: true,
+          nodes: packages.filter(x => !x.used)
+      };
+      findWhy(head);
+      filterOnlyMatches(head);
+      console.log(archy(head));
+    } else if (settings.onlyTopLevel) {
         packages.filter(x => !x.used).forEach(x => {
             console.log(x.label);
         });

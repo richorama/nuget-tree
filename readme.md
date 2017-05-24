@@ -51,6 +51,7 @@ Optional parameters:
 * `--onlyTopLevel` : lists only the packages at the top level of the tree (i.e. those that are
 not depended upon by any other package)
 * `--flat` : lists the dependencies without the hierarchy
+* `--why Newtonsoft.Json` : shows only dependency trees that reference the given package (Newtonsoft.Json in this case)
 
 ## License
 
