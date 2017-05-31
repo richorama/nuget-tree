@@ -30,6 +30,23 @@ function hasValue(name){
     return process.argv[index + 1];
 }
 
+if (hasFlag('?') || hasFlag('h') || hasFlag('help')){
+  var fs = require('fs');
+  var version = JSON.parse(fs.readFileSync('./package.json').toString()).version;
+  console.log(`nuget-tree version ${version}
+Execute this command (nuget-tree) in the directory containing a .NET project.
+packages.config or project.lock.json will be parsed to draw a nuget dependency tree.
+
+Optional command line switches:
+  --hideVersion         : hides the package versions
+  --showSystem          : shows the System.* packages
+  --onlyTopLevel        : lists only the packages at the top level of the tree (i.e. those that are not depended upon by any other package)
+  --flat                : lists the dependencies without the hierarchy
+  --why Newtonsoft.Json : shows only dependency trees that reference the given package (Newtonsoft.Json in this case)
+    `);
+  return;
+}
+
 var settings = {
     hideVersion: hasFlag('hideVersion'),
     showSystem: hasFlag('showSystem'),
@@ -39,7 +56,7 @@ var settings = {
 }
 
 if (settings.why){
-  console.log("Showing dependency trees containing " + settings.why);  
+  console.log("Showing dependency trees containing " + settings.why);
 }
 
 var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
