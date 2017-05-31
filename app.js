@@ -32,7 +32,8 @@ function hasValue(name){
 
 if (hasFlag('?') || hasFlag('h') || hasFlag('help')){
   var fs = require('fs');
-  var version = JSON.parse(fs.readFileSync('./package.json').toString()).version;
+  var path = require('path');
+  var version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json')).toString()).version;
   console.log(`nuget-tree version ${version}
 Execute this command (nuget-tree) in the directory containing a .NET project.
 packages.config or project.lock.json will be parsed to draw a nuget dependency tree.
