@@ -11,6 +11,7 @@
 
 */
 
+var packageReference = require('./packagereference.js');
 var packagesConfig = require('./packages.config.js');
 var projectLockJson = require('./project.lock.json.js');
 var nuspec = require('./package.nupkg.js');
@@ -64,7 +65,9 @@ var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
 if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 
 var packagesFromPackageConfig = packagesConfig.list(dir);
-if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
+var packagesFromPackageReferences = packageReference.list(dir);
+var mergedPackages = (packagesFromPackageConfig||[]).concat(packagesFromPackageReferences||[]);
+if (mergedPackages && mergedPackages.length) {
 
     var packageFolder = packages.findPackageFolder(dir);
     if (!packageFolder) {
@@ -72,7 +75,7 @@ if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
         return;
     }
 
-    var packages = packagesFromPackageConfig;
+    var packages = mergedPackages;
     if (!settings.showSystem) {
         packages = packages.filter(x => x.id.indexOf('System.') !== 0)
     }
