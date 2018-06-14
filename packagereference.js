@@ -15,17 +15,22 @@ module.exports.list = function (dir) {
     parseXml(xml, function (err, result) {
         parsedOutput = result;
     });
-
+    if (!(parsedOutput && parsedOutput.Project && parsedOutput.Project.ItemGroup)) {
+        return null;
+    }
     try {
-        return parsedOutput.Project.ItemGroup.filter(a=>a&&a.PackageReference).map(a=>a.PackageReference.map(x => {
+        let itemGroup = parsedOutput.Project.ItemGroup;
+        if (!Array.isArray(itemGroup)) {
+            itemGroup = [itemGroup];
+        }
+        return itemGroup.filter(a => a && a.PackageReference).map(a => a.PackageReference.map(x => {
             return {
                 id: x.$.Include,
                 version: x.$.Version,
                 targetFramework: null
             }
-        })).reduce((ret, cur)=>ret.concat(cur),[]);
-    }
-    catch(err){
+        })).reduce((ret, cur) => ret.concat(cur), []);
+    } catch (err) {
         console.log(`Cannot parse ${file}. Is it in a valid format?`);
         return false;
     }
