@@ -30,6 +30,40 @@ function hasValue(name){
     if (index === -1) return null;
     return process.argv[index + 1];
 }
+function processXmlPackages(packageList, settings, dir, fileName) {
+    if (!(packageList && packageList.length)) return;
+    const packageFolder = packages.findPackageFolder(dir);
+    if (!packageFolder) {
+        console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
+        return;
+    }
+    if (!settings.showSystem) {
+        packageList = packageList.filter(x => x.id.indexOf('System.') !== 0)
+    }
+
+    const packageDictionary = {};
+    packageList.forEach(x => {
+        packageDictionary[x.id] = x;
+        x.label = x.id + " " + (settings.hideVersion ? "" : x.version.green);
+    });
+
+    packageList.forEach(x => {
+        x.nodes = x.nodes || [];
+        (nuspec.readNuspec(packageFolder, x) || []).forEach(dep => {
+
+            var resolvedDep = packageDictionary[dep.id];
+            if (resolvedDep) {
+                if (x.nodes.filter(x => x.id === dep.id).length) return; // already added
+
+                x.nodes.push(resolvedDep);
+                resolvedDep.used = true;
+            } else {
+                //dep.id is missing from package.config, at the moment we're not observing targets
+            }
+        });
+    });
+    displayPackages(packageList, fileName);
+}
 
 if (hasFlag('?') || hasFlag('h') || hasFlag('help')){
   var fs = require('fs');
@@ -37,7 +71,7 @@ if (hasFlag('?') || hasFlag('h') || hasFlag('help')){
   var version = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json')).toString()).version;
   console.log(`nuget-tree version ${version}
 Execute this command (nuget-tree) in the directory containing a .NET project.
-packages.config or project.lock.json will be parsed to draw a nuget dependency tree.
+packages.config, *.csproj or project.lock.json will be parsed to draw a nuget dependency tree.
 
 Optional command line switches:
   --hideVersion         : hides the package versions
@@ -64,45 +98,9 @@ if (settings.why){
 var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
 if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 
-var packagesFromPackageConfig = packagesConfig.list(dir);
-var packagesFromPackageReferences = packageReference.list(dir);
-var mergedPackages = (packagesFromPackageConfig||[]).concat(packagesFromPackageReferences||[]);
-if (mergedPackages && mergedPackages.length) {
+processXmlPackages(packagesConfig.list(dir), settings, dir, 'packages.config')
+processXmlPackages(packageReference.list(dir), settings, dir, 'csproj')
 
-    var packageFolder = packages.findPackageFolder(dir);
-    if (!packageFolder) {
-        console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
-        return;
-    }
-
-    var packages = mergedPackages;
-    if (!settings.showSystem) {
-        packages = packages.filter(x => x.id.indexOf('System.') !== 0)
-    }
-
-    var packageDictionary = {};
-    packages.forEach(x => {
-        packageDictionary[x.id] = x;
-        x.label = x.id + " " + (settings.hideVersion ? "" : x.version.green);
-    });
-
-    packages.forEach(x => {
-        x.nodes = x.nodes || [];
-        (nuspec.readNuspec(packageFolder, x) || []).forEach(dep => {
-
-            var resolvedDep = packageDictionary[dep.id];
-            if (resolvedDep) {
-                if (x.nodes.filter(x => x.id === dep.id).length) return; // already added
-
-                x.nodes.push(resolvedDep);
-                resolvedDep.used = true;
-            } else {
-                //dep.id is missing from package.config, at the moment we're not observing targets
-            }
-        });
-    });
-    displayPackages(packages, 'packages.config');
-}
 
 function findWhy(node){
   node.match = false;
