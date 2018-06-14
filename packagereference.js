@@ -5,7 +5,7 @@ var safeBufferRead = require('./safeBufferRead');
 
 module.exports.list = function (dir) {
     const files = fs.readdirSync(dir).filter(file => file.toLowerCase().endsWith(".csproj") && fs.existsSync(file));
-    if (!files) return null;
+    if (!files.length) return null;
 
     const file = files[0];
 
