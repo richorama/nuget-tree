@@ -32,7 +32,12 @@ function hasValue(name){
 }
 function processXmlPackages(packageList, settings, dir, fileName) {
     if (!(packageList && packageList.length)) return;
-    const packageFolder = packages.findPackageFolder(dir);
+    if (settings.packageFolder) {
+        packageFolder = settings.packageFolder
+    } else {
+        packageFolder = packages.findPackageFolder(dir);
+    }
+
     if (!packageFolder) {
         console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
         return;
@@ -88,7 +93,8 @@ var settings = {
     showSystem: hasFlag('showSystem'),
     onlyTopLevel: hasFlag('onlyTopLevel'),
     flat: hasFlag('flat'),
-    why:hasValue('why')
+    why:hasValue('why'),
+    packageFolder:hasValue('packageFolder')
 }
 
 if (settings.why){
