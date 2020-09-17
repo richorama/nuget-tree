@@ -10,6 +10,7 @@ module.exports.readNuspec = function(packagesFolder, package, settings){
     var packageFilePath = path.join(packagesFolder, package.id + "." + package.version, package.id + "." + package.version + ".nupkg");
 
     if (!fs.existsSync(packageFilePath)) {
+    if (!fs.existsSync(packageFilePath)) {
         packageFilePath = path.join(packagesFolder, package.id.toLowerCase() + "." + package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
     }
 
