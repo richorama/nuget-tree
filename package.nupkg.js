@@ -4,11 +4,12 @@ var zip = require('zip');
 var parseXml = require('xml2js').parseString;
 var safeBufferRead = require('./safeBufferRead');
 
-module.exports.readNuspec = function(packagesFolder, package){
+module.exports.readNuspec = function(packagesFolder, package, settings){
     if (!packagesFolder) throw new Error("no packagesFolder");
 
     var packageFilePath = path.join(packagesFolder, package.id + "." + package.version, package.id + "." + package.version + ".nupkg");
 
+    if (!fs.existsSync(packageFilePath)) {
     if (!fs.existsSync(packageFilePath)) {
         packageFilePath = path.join(packagesFolder, package.id.toLowerCase() + "." + package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
     }
@@ -22,7 +23,9 @@ module.exports.readNuspec = function(packagesFolder, package){
     }
 
     if (!fs.existsSync(packageFilePath)) {
-        console.log("WARN: Cannot find nupkg file for " + package.id);
+        if (!settings.observingTargets) {
+            console.log("WARN: Cannot find nupkg file for " + package.id);
+        }
         return [];
     }
 
