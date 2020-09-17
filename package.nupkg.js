@@ -10,8 +10,19 @@ module.exports.readNuspec = function(packagesFolder, package){
     var packageFilePath = path.join(packagesFolder, package.id + "." + package.version, package.id + "." + package.version + ".nupkg");
 
     if (!fs.existsSync(packageFilePath)) {
+        packageFilePath = path.join(packagesFolder, package.id.toLowerCase() + "." + package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
+    }
+
+    if (!fs.existsSync(packageFilePath)) {
+        packageFilePath = path.join(packagesFolder, package.id, package.version, package.id + "." + package.version + ".nupkg");
+    }
+
+    if (!fs.existsSync(packageFilePath)) {
+        packageFilePath = path.join(packagesFolder, package.id.toLowerCase(), package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
+    }
+
+    if (!fs.existsSync(packageFilePath)) {
         console.log("WARN: Cannot find nupkg file for " + package.id);
-        console.log("Attempted to open this file: " + packageFilePath);
         return [];
     }
 
