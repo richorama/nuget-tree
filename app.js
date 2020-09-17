@@ -11,6 +11,7 @@
 
 */
 
+const semver = require('semver');
 var packageReference = require('./packagereference.js');
 var packagesConfig = require('./packages.config.js');
 var projectLockJson = require('./project.lock.json.js');
@@ -56,17 +57,19 @@ function processXmlPackages(packageList, settings, dir, fileName) {
     packageList.forEach(x => {
         x.nodes = x.nodes || [];
         (nuspec.readNuspec(packageFolder, x, settings) || []).forEach(dep => {
-
+            if (settings.observingTargets) {
+                getObservingTargets(packageFolder, x, dep, settings);
+            }
             var resolvedDep = packageDictionary[`${dep.id}|${dep.version}`];
             if (resolvedDep) {
                 if (x.nodes.filter(y => y.id === dep.id && y.version === dep.version).length) return; // already added
                 x.nodes.push(resolvedDep);
                 resolvedDep.used = true;
-            } else {
+            }/* else {
                 if (settings.observingTargets) {
                     getObservingTargets(packageFolder, x, dep, settings);
                 }
-            }
+            }*/
         });
     });
     displayPackages(packageList, fileName);
@@ -145,6 +148,40 @@ function filterOnlyMatches(node){
     node.nodes.forEach(filterOnlyMatches)
 }
 
+function getWorkingVersion(version) {
+    var curr = semver.valid(version);
+    if(curr == null) {
+        var alternateArray = version.split('.');
+        alternateArray.pop();
+        if(alternateArray.length == 0)
+            return null;
+        return getWorkingVersion(alternateArray.join('.'));
+    }
+    return curr;
+}
+
+function getMaxPackage(packages, pkgs) {
+    pkgs = pkgs || {};
+    packages.forEach(x => {
+        var curr = getWorkingVersion(x.version);
+        if(curr == null) {
+            return;
+        }
+        if(x.id in pkgs) {
+            if(pkgs[x.id] == null)
+                pkgs[x.id] = curr;
+            else
+                if(semver.gt(curr, pkgs[x.id]))
+                    pkgs[x.id] = curr;
+        }
+        else {
+            pkgs[x.id] = curr;
+        }
+        getMaxPackage(x.nodes, pkgs);
+    });
+    return pkgs;
+}
+
 function displayPackages(packages, source) {
 
     if (settings.why){
@@ -162,8 +199,11 @@ function displayPackages(packages, source) {
             console.log(x.label);
         });
     } else if (settings.flat) {
-        packages.forEach(x => {
-            console.log(x.label);
+        var pkgs = getMaxPackage(packages, {});
+        var keys = Object.keys(pkgs);
+        keys.sort();
+        keys.forEach(x => {
+            console.log(x + " " + (settings.hideVersion ? "" : pkgs[x].green));
         });
     } else {
         var head = {
