@@ -23,14 +23,13 @@ module.exports.list = function(dir, settings){
             var depParts = dep.split('/');
             var id = depParts[0];
             var version = depParts[1];
-            var dependency = json.targets[target][dep];
 
             if (!packageDictionary[id]) {
                 packageDictionary[id] = {
                     id : id,
                     version: version,
                     targetFramework : target,
-                    label : id + " " + (settings.hideVersion ? "" : version.green),
+                    label : id + " " + (settings.hideVersion ? "" : (version || '').green),
                     nodes:[]
                 }
             }
@@ -45,7 +44,6 @@ module.exports.list = function(dir, settings){
 
             var depParts = dep.split('/');
             var id = depParts[0];
-            var version = depParts[1];
             var dependency = json.targets[target][dep];
 
             var pkg = packageDictionary[id];

@@ -4,21 +4,21 @@ var zip = require('zip');
 var parseXml = require('xml2js').parseString;
 var safeBufferRead = require('./safeBufferRead');
 
-module.exports.readNuspec = function(packagesFolder, package, settings) {
-        if (!packagesFolder) throw new Error("no packagesFolder");
+module.exports.readNuspec = function (packagesFolder, package, settings) {
+    if (!packagesFolder) throw new Error("no packagesFolder");
 
-        var packageFilePath = path.join(packagesFolder, package.id + "." + package.version, package.id + "." + package.version + ".nupkg");
+    var packageFilePath = path.join(packagesFolder, package.id + "." + package.version, package.id + "." + package.version + ".nupkg");
 
-        if (!fs.existsSync(packageFilePath)) {
+    if (!fs.existsSync(packageFilePath)) {
         if (!fs.existsSync(packageFilePath)) {
             packageFilePath = path.join(packagesFolder, package.id.toLowerCase() + "." + package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
         }
 
-        if (!fs.existsSync(packageFilePath)) {
+        if (!fs.existsSync(packageFilePath) && package.version) {
             packageFilePath = path.join(packagesFolder, package.id, package.version, package.id + "." + package.version + ".nupkg");
         }
 
-        if (!fs.existsSync(packageFilePath)) {
+        if (!fs.existsSync(packageFilePath) && package.version) {
             packageFilePath = path.join(packagesFolder, package.id.toLowerCase(), package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
         }
 
@@ -41,7 +41,7 @@ module.exports.readNuspec = function(packagesFolder, package, settings) {
     }
 }
 
-function readAllDeps(nuspecXml){
+function readAllDeps(nuspecXml) {
     var dependencies = [];
     parseXml(nuspecXml, (err, data) => {
         if (err) console.error(err);
@@ -68,13 +68,13 @@ function readAllDeps(nuspecXml){
 }
 
 
-function openNuspecFile(packageFilePath){
+function openNuspecFile(packageFilePath) {
 
     var pkgData = fs.readFileSync(packageFilePath);
     var reader = zip.Reader(pkgData);
     var nuspec;
     reader.forEach(function (entry, next) {
-        if (path.extname(entry._header.file_name) === ".nuspec"){
+        if (path.extname(entry._header.file_name) === ".nuspec") {
             nuspec = safeBufferRead(entry.getData())
         }
     });
