@@ -11,6 +11,7 @@
 
 */
 
+const semver = require('semver');
 var packageReference = require('./packagereference.js');
 var packagesConfig = require('./packages.config.js');
 var projectLockJson = require('./project.lock.json.js');
@@ -39,35 +40,54 @@ function processXmlPackages(packageList, settings, dir, fileName) {
     }
 
     if (!packageFolder) {
-        console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
+        console.log("Cannot find 'packages' directory. Have you run 'nuget restore' or 'dotnet restore'?");
         return;
     }
+
     if (!settings.showSystem) {
         packageList = packageList.filter(x => x.id.indexOf('System.') !== 0)
     }
 
     const packageDictionary = {};
     packageList.forEach(x => {
-        packageDictionary[x.id] = x;
+        packageDictionary[`${x.id}|${x.version}`] = x;
         x.label = x.id + " " + (settings.hideVersion ? "" : x.version.green);
     });
 
     packageList.forEach(x => {
         x.nodes = x.nodes || [];
-        (nuspec.readNuspec(packageFolder, x) || []).forEach(dep => {
-
-            var resolvedDep = packageDictionary[dep.id];
+        (nuspec.readNuspec(packageFolder, x, settings) || []).forEach(dep => {
+            if (settings.observingTargets) {
+                getObservingTargets(packageFolder, x, dep, settings);
+            }
+            var resolvedDep = packageDictionary[`${dep.id}|${dep.version}`];
             if (resolvedDep) {
-                if (x.nodes.filter(x => x.id === dep.id).length) return; // already added
-
+                if (x.nodes.filter(y => y.id === dep.id && y.version === dep.version).length) return; // already added
                 x.nodes.push(resolvedDep);
                 resolvedDep.used = true;
-            } else {
-                //dep.id is missing from package.config, at the moment we're not observing targets
-            }
+            }/* else {
+                if (settings.observingTargets) {
+                    getObservingTargets(packageFolder, x, dep, settings);
+                }
+            }*/
         });
     });
     displayPackages(packageList, fileName);
+}
+
+function getObservingTargets(packageFolder, x, dep, settings) {
+    dep.nodes = dep.nodes || [];
+    (nuspec.readNuspec(packageFolder, dep, settings) || []).forEach(dep2 => {
+        if (dep.nodes.filter(y => y.id === dep2.id && y.version === dep2.version).length) return;
+        dep2.label = dep2.id + " " + (settings.hideVersion ? "" : dep2.version.green);
+        dep2.used = false;
+        dep.nodes.push(dep2);
+        getObservingTargets(packageFolder, dep, dep2, settings);
+    });
+    if (x.nodes.filter(y => y.id === dep.id && y.version === dep.version).length) return;
+    dep.label = dep.id + " " + (settings.hideVersion ? "" : dep.version.green);
+    dep.used = false;
+    x.nodes.push(dep);
 }
 
 if (hasFlag('?') || hasFlag('h') || hasFlag('help')){
@@ -82,6 +102,7 @@ Optional command line switches:
   --hideVersion         : hides the package versions
   --showSystem          : shows the System.* packages
   --onlyTopLevel        : lists only the packages at the top level of the tree (i.e. those that are not depended upon by any other package)
+  --observingTargets    : lists the dependencies of dependencies (full tree)
   --flat                : lists the dependencies without the hierarchy
   --why Newtonsoft.Json : shows only dependency trees that reference the given package (Newtonsoft.Json in this case)
     `);
@@ -92,6 +113,7 @@ var settings = {
     hideVersion: hasFlag('hideVersion'),
     showSystem: hasFlag('showSystem'),
     onlyTopLevel: hasFlag('onlyTopLevel'),
+    observingTargets: hasFlag('observingTargets'),
     flat: hasFlag('flat'),
     why:hasValue('why'),
     packageFolder:hasValue('packageFolder')
@@ -115,15 +137,49 @@ function findWhy(node){
     node.match = true;
   }
 
-  node.nodes.forEach(child => {
+  (node.nodes || []).forEach(child => {
     node.match = findWhy(child) || node.match
   });
   return node.match;
 }
 
 function filterOnlyMatches(node){
-    node.nodes = node.nodes.filter(x => x.match);
+    node.nodes = (node.nodes || []).filter(x => x.match);
     node.nodes.forEach(filterOnlyMatches)
+}
+
+function getWorkingVersion(version) {
+    var curr = semver.valid(version);
+    if(curr == null) {
+        var alternateArray = version.split('.');
+        alternateArray.pop();
+        if(alternateArray.length == 0)
+            return null;
+        return getWorkingVersion(alternateArray.join('.'));
+    }
+    return curr;
+}
+
+function getMaxPackage(packages, pkgs) {
+    pkgs = pkgs || {};
+    packages.forEach(x => {
+        var curr = getWorkingVersion(x.version);
+        if(curr == null) {
+            return;
+        }
+        if(x.id in pkgs) {
+            if(pkgs[x.id] == null)
+                pkgs[x.id] = curr;
+            else
+                if(semver.gt(curr, pkgs[x.id]))
+                    pkgs[x.id] = curr;
+        }
+        else {
+            pkgs[x.id] = curr;
+        }
+        getMaxPackage(x.nodes, pkgs);
+    });
+    return pkgs;
 }
 
 function displayPackages(packages, source) {
@@ -143,8 +199,11 @@ function displayPackages(packages, source) {
             console.log(x.label);
         });
     } else if (settings.flat) {
-        packages.forEach(x => {
-            console.log(x.label);
+        var pkgs = getMaxPackage(packages, {});
+        var keys = Object.keys(pkgs);
+        keys.sort();
+        keys.forEach(x => {
+            console.log(x + " " + (settings.hideVersion ? "" : pkgs[x].green));
         });
     } else {
         var head = {

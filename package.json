@@ -1,6 +1,6 @@
 {
   "name": "nuget-tree",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "dependencies": {
     "archy": "^1.0.0",
     "colors": "^1.1.2",
+    "semver": "^7.3.2",
     "xml2js": "^0.4.17",
     "zip": "^1.2.0"
   },
