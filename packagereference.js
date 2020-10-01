@@ -26,7 +26,7 @@ module.exports.list = function (dir) {
         return itemGroup.filter(a => a && a.PackageReference).map(a => a.PackageReference.map(x => {
             return {
                 id: x.$.Include,
-                version: x.$.Version,
+                version: x.$.Version ?? x.Version[0],
                 targetFramework: null
             }
         })).reduce((ret, cur) => ret.concat(cur), []);
