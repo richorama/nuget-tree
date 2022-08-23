@@ -10,35 +10,33 @@ module.exports.readNuspec = function (packagesFolder, package, settings) {
     var packageFilePath = path.join(packagesFolder, package.id + "." + package.version, package.id + "." + package.version + ".nupkg");
 
     if (!fs.existsSync(packageFilePath)) {
-        if (!fs.existsSync(packageFilePath)) {
-            packageFilePath = path.join(packagesFolder, package.id.toLowerCase() + "." + package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
-        }
+        packageFilePath = path.join(packagesFolder, package.id.toLowerCase() + "." + package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
 
         if (!fs.existsSync(packageFilePath) && package.version) {
             packageFilePath = path.join(packagesFolder, package.id, package.version, package.id + "." + package.version + ".nupkg");
-        }
 
-        if (!fs.existsSync(packageFilePath) && package.version) {
-            packageFilePath = path.join(packagesFolder, package.id.toLowerCase(), package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
-        }
+            if (!fs.existsSync(packageFilePath) && package.version) {
+                packageFilePath = path.join(packagesFolder, package.id.toLowerCase(), package.version, package.id.toLowerCase() + "." + package.version + ".nupkg");
 
-        if (!fs.existsSync(packageFilePath)) {
-            if (!settings.observingTargets) {
-                console.log("WARN: Cannot find nupkg file for " + package.id);
+                if (!fs.existsSync(packageFilePath)) {
+                    if (!settings.observingTargets) {
+                        console.log("WARN: Cannot find nupkg file for " + package.id);
+                    }
+                    return [];
+                }
             }
-            return [];
         }
-
-        var nuspecXml = openNuspecFile(packageFilePath);
-
-        if (!nuspecXml) {
-            console.log("WARN: Cannot find nuspec file for " + package.id);
-            console.log("Attempted to open this file: " + packageFilePath);
-            return [];
-        }
-
-        return readAllDeps(nuspecXml);
     }
+
+    var nuspecXml = openNuspecFile(packageFilePath);
+
+    if (!nuspecXml) {
+        console.log("WARN: Cannot find nuspec file for " + package.id);
+        console.log("Attempted to open this file: " + packageFilePath);
+        return [];
+    }
+
+    return readAllDeps(nuspecXml);
 }
 
 function readAllDeps(nuspecXml) {
