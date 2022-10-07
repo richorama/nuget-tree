@@ -51,7 +51,7 @@ function processXmlPackages(packageList, settings, dir, fileName) {
     const packageDictionary = {};
     packageList.forEach(x => {
         packageDictionary[`${x.id}|${x.version}`] = x;
-        x.label = x.id + " " + (settings.hideVersion ? "" : (x.version || '').green);
+        x.label = x.id + " " + (settings.hideVersion ? "" : (x.version || ''));
     });
 
     packageList.forEach(x => {
@@ -79,13 +79,13 @@ function getObservingTargets(packageFolder, x, dep, settings) {
     dep.nodes = dep.nodes || [];
     (nuspec.readNuspec(packageFolder, dep, settings) || []).forEach(dep2 => {
         if (dep.nodes.filter(y => y.id === dep2.id && y.version === dep2.version).length) return;
-        dep2.label = dep2.id + " " + (settings.hideVersion ? "" : (dep2.version || '').green);
+        dep2.label = dep2.id + " " + (settings.hideVersion ? "" : (dep2.version || ''));
         dep2.used = false;
         dep.nodes.push(dep2);
         getObservingTargets(packageFolder, dep, dep2, settings);
     });
     if (x.nodes.filter(y => y.id === dep.id && y.version === dep.version).length) return;
-    dep.label = dep.id + " " + (settings.hideVersion ? "" : (dep.version || '').green);
+    dep.label = dep.id + " " + (settings.hideVersion ? "" : (dep.version || ''));
     dep.used = false;
     x.nodes.push(dep);
 }
@@ -203,7 +203,7 @@ function displayPackages(packages, source) {
         var keys = Object.keys(pkgs);
         keys.sort();
         keys.forEach(x => {
-            console.log(x + " " + (settings.hideVersion ? "" : (pkgs[x] || '').green));
+            console.log(x + " " + (settings.hideVersion ? "" : (pkgs[x] || '')));
         });
     } else {
         var head = {

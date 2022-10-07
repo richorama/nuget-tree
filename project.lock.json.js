@@ -29,7 +29,7 @@ module.exports.list = function(dir, settings){
                     id : id,
                     version: version,
                     targetFramework : target,
-                    label : id + " " + (settings.hideVersion ? "" : (version || '').green),
+                    label : id + " " + (settings.hideVersion ? "" : (version || '')),
                     nodes:[]
                 }
             }
