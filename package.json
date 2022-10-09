@@ -1,5 +1,5 @@
 {
-  "name": "nuget-tree",
+  "name": "@apiiro/nuget-tree",
   "version": "1.0.21",
   "description": "",
   "main": "app.js",
@@ -21,6 +21,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/richorama/nuget-tree.git"
+    "url": "https://github.com/apiiro/nuget-tree.git"
   }
 }
