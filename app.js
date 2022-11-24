@@ -127,7 +127,6 @@ var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
 if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 
 processXmlPackages(packagesConfig.list(dir), settings, dir, 'packages.config')
-processXmlPackages(packageReference.list(dir), settings, dir, 'csproj')
 
 
 function findWhy(node){
